@@ -1,0 +1,22 @@
+test_that("save_pacmap/load_pacmap round-trips", {
+  X <- as.matrix(iris[, 1:4])
+  fit <- pacmap(X, num_iters = c(20L, 20L, 40L), random_state = 1L)
+  tmp <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp), add = TRUE)
+  save_pacmap(fit, tmp)
+  fit2 <- load_pacmap(tmp)
+  expect_identical(fit$embedding, fit2$embedding)
+  expect_identical(fit$params, fit2$params)
+})
+
+test_that("transform after load matches transform before save", {
+  X <- as.matrix(iris[, 1:4])
+  fit <- pacmap(X[-c(1:10), ], num_iters = c(30L, 30L, 60L), random_state = 3L)
+  before <- transform(fit, X[1:10, ], num_iters = c(30L, 30L, 60L))
+  tmp <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp), add = TRUE)
+  save_pacmap(fit, tmp)
+  fit2 <- load_pacmap(tmp)
+  after <- transform(fit2, X[1:10, ], num_iters = c(30L, 30L, 60L))
+  expect_equal(before, after, tolerance = 1e-6)
+})

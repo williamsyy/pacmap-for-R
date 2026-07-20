@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.o
+*.so
+*.dll
+src/*.o
+src/*.so
+src/*.dll
+src/symbols.rds
+# roxygen2 leaves these when regenerating; keep NAMESPACE and man/ committed.
+..Rcheck/
+*.tar.gz

@@ -1,0 +1,34 @@
+Package: pacmapr
+Title: Pairwise Controlled Manifold Approximation Projection (PaCMAP) for R
+Version: 0.1.0
+Authors@R: c(
+    person("Yiyang", "Sun", email = "yiyangsun32@gmail.com", role = c("aut", "cre")),
+    person("Yingfan", "Wang", role = "aut",
+           comment = "Author of the original Python PaCMAP implementation"),
+    person("PaCMAP contributors", role = "cph")
+    )
+Description: A native R (and C++) implementation of Pairwise Controlled
+    Manifold Approximation Projection (PaCMAP), a dimensionality reduction
+    method that preserves both local and global structure by simultaneously
+    optimizing over three types of pairs: nearest neighbours, mid-near pairs,
+    and further pairs. This package is a re-implementation of the reference
+    Python package by Wang et al.; no Python installation is required.
+    See Wang, Huang, Rudin & Shaposhnik (2021) <https://www.jmlr.org/papers/v22/20-1061.html>.
+License: MIT + file LICENSE
+Encoding: UTF-8
+SystemRequirements: C++17
+Depends:
+    R (>= 4.0)
+Imports:
+    Rcpp,
+    RcppHNSW,
+    RSpectra,
+    stats,
+    utils
+LinkingTo:
+    Rcpp
+Suggests:
+    testthat (>= 3.0.0),
+    faissR
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3

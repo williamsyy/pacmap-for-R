@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.git$
+^\.github$
+^\.gitignore$
+^scratch$
+^dev$
+^README\.Rmd$
+^cran-comments\.md$
+^\.\.Rcheck$
