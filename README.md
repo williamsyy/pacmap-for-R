@@ -53,7 +53,7 @@ Modelled on `uwot`'s install flow. Pick whichever line fits your situation:
 
 ```r
 # 1. From GitHub (once the repo is public):
-remotes::install_github("YiyangSun/pacmapr")
+remotes::install_github("williamsyy/pacmap-for-R")
 
 # 2. From a local tarball (offline / air-gapped):
 install.packages("pacmapr_0.1.0.tar.gz", repos = NULL, type = "source")
