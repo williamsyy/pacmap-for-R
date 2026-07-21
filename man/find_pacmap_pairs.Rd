@@ -11,7 +11,7 @@ find_pacmap_pairs(
   FP_ratio = 2,
   distance = "euclidean",
   ann_backend = c("hnsw", "faiss", "auto"),
-  n_threads = 1L,
+  n_threads = NULL,
   random_state = NULL
 )
 }

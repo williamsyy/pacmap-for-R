@@ -58,9 +58,11 @@
 transform.pacmap <- function(`_data`, newdata,
                              num_iters = c(50L, 50L, 100L),
                              init = "pca",
-                             n_threads = 1L,
+                             n_threads = NULL,
                              verbose = FALSE, ...) {
   object <- `_data`
+  if (is.null(n_threads)) n_threads <- max(1L, parallel::detectCores() - 1L)
+  n_threads <- as.integer(n_threads)
   if (isTRUE(object$preprocess$precomputed))
     stop("transform() is not supported when the model was fit with distance='precomputed'")
   if (!is.matrix(newdata)) newdata <- as.matrix(newdata)
@@ -100,6 +102,7 @@ transform.pacmap <- function(`_data`, newdata,
   res <- pacmap_fit_optimize_cpp(Y0, pair_XP,
                                  n_basis = nrow(object$embedding),
                                  lr = p$lr, num_iters = num_iters,
+                                 n_threads = n_threads,
                                  verbose = verbose)
   # Return only the new-point rows.
   res$embedding[(nrow(object$embedding) + 1L):nrow(res$embedding), , drop = FALSE]

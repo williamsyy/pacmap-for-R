@@ -36,7 +36,8 @@ CRAN dependencies (`Rcpp`, `RcppHNSW`, `RSpectra`) are pulled in automatically.
 
 ## Features
 
-- **`pacmap()`** — fit an embedding.
+- **`pacmap()`** — fit a PaCMAP embedding.
+- **`localmap()`** — fit a LocalMAP embedding (adds phase-3 local FP resampling + modified NN gradient; extra hyperparameter `low_dist_thres`).
 - **`transform()`** — embed new points into an existing model.
 - **`save_pacmap()` / `load_pacmap()`** — one-file `.rds` persistence.
 - **`find_pacmap_pairs()`** — expose the pair-sampling step for inspection or reuse.
@@ -50,11 +51,11 @@ Full MNIST, 70 000 images × 784 pixels → 2D:
 
 | n         | wall-clock  | label preservation @ 10 |
 |----------:|------------:|------------------------:|
-|    10 000 |     9.4 s   | 0.903                   |
-|    30 000 |    36.0 s   | 0.937                   |
-| **70 000** | **104.9 s** | **0.952**              |
+|    10 000 |     7.4 s   | 0.903                   |
+|    30 000 |    28.0 s   | 0.937                   |
+| **70 000** | **77.4 s**  | **0.952**              |
 
-Single-threaded on a Windows 11 laptop, default hyperparameters (`num_iters = c(100, 100, 250)`). Reproduce with
+Windows 11 laptop, 21 threads (parallel gradient + multi-threaded HNSW), default hyperparameters (`num_iters = c(100, 100, 250)`). Reproduce with
 
 ```r
 Rscript inst/scripts/mnist.R

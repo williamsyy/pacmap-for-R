@@ -1,6 +1,6 @@
 Package: pacmapr
 Title: Pairwise Controlled Manifold Approximation Projection (PaCMAP) for R
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Yiyang", "Sun", email = "yiyangsun32@gmail.com", role = c("aut", "cre")),
     person("Yingfan", "Wang", role = "aut",
@@ -23,6 +23,7 @@ Imports:
     Rcpp,
     RcppHNSW,
     RSpectra,
+    parallel,
     stats,
     utils
 LinkingTo:

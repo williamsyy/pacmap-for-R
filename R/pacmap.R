@@ -25,6 +25,9 @@
 #'   \code{c(nrow(X), n_components)}.
 #' @param apply_pca logical, apply PCA-to-100 preprocessing when ncol(X)>100.
 #' @param ann_backend ANN backend for neighbour search. Currently "hnsw".
+#' @param n_threads threads for the ANN and gradient steps. Defaults to
+#'   \code{parallel::detectCores() - 1L} (leaves one core for the OS).
+#'   Set to \code{1L} for a fully single-threaded run.
 #' @param n_threads threads for the ANN build/query step.
 #' @param random_state integer seed for deterministic pair sampling. If NULL,
 #'   pair sampling uses R's RNG.
@@ -51,13 +54,15 @@ pacmap <- function(X,
                    init         = "pca",
                    apply_pca    = TRUE,
                    ann_backend  = c("hnsw", "faiss", "auto"),
-                   n_threads    = 1L,
+                   n_threads    = NULL,
                    random_state = NULL,
                    verbose      = FALSE) {
 
   distance <- match.arg(distance)
   ann_backend <- match.arg(ann_backend)
   precomputed <- identical(distance, "precomputed")
+  if (is.null(n_threads)) n_threads <- max(1L, parallel::detectCores() - 1L)
+  n_threads <- as.integer(n_threads)
   if (!is.matrix(X)) X <- as.matrix(X)
   storage.mode(X) <- "double"
   n <- nrow(X)
@@ -139,9 +144,10 @@ pacmap <- function(X,
                           seed = rs_int)
   }
 
-  if (verbose) message("Optimizing (", sum(num_iters), " iters)")
+  if (verbose) message("Optimizing (", sum(num_iters), " iters, ", n_threads, " threads)")
   t0 <- Sys.time()
-  res <- pacmap_optimize_cpp(Y0, pair_nb, pair_MN, pair_FP, lr, num_iters, verbose)
+  res <- pacmap_optimize_cpp(Y0, pair_nb, pair_MN, pair_FP, lr, num_iters,
+                             n_threads, verbose)
   elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
   if (verbose) message(sprintf("Optimization done in %.2fs", elapsed))
 
@@ -180,9 +186,11 @@ find_pacmap_pairs <- function(X,
                               FP_ratio     = 2.0,
                               distance     = "euclidean",
                               ann_backend  = c("hnsw", "faiss", "auto"),
-                              n_threads    = 1L,
+                              n_threads    = NULL,
                               random_state = NULL) {
   ann_backend <- match.arg(ann_backend)
+  if (is.null(n_threads)) n_threads <- max(1L, parallel::detectCores() - 1L)
+  n_threads <- as.integer(n_threads)
   if (!is.matrix(X)) X <- as.matrix(X)
   storage.mode(X) <- "double"
   n <- nrow(X)

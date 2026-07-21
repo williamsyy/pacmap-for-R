@@ -9,7 +9,7 @@
   newdata,
   num_iters = c(50L, 50L, 100L),
   init = "pca",
-  n_threads = 1L,
+  n_threads = NULL,
   verbose = FALSE,
   ...
 )

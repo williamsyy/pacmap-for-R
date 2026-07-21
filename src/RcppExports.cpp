@@ -53,8 +53,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // pacmap_optimize_cpp
-List pacmap_optimize_cpp(NumericMatrix Y_init, IntegerMatrix pair_nb, IntegerMatrix pair_MN, IntegerMatrix pair_FP, double lr, IntegerVector num_iters, bool verbose);
-RcppExport SEXP _pacmapr_pacmap_optimize_cpp(SEXP Y_initSEXP, SEXP pair_nbSEXP, SEXP pair_MNSEXP, SEXP pair_FPSEXP, SEXP lrSEXP, SEXP num_itersSEXP, SEXP verboseSEXP) {
+List pacmap_optimize_cpp(NumericMatrix Y_init, IntegerMatrix pair_nb, IntegerMatrix pair_MN, IntegerMatrix pair_FP, double lr, IntegerVector num_iters, int n_threads, bool verbose);
+RcppExport SEXP _pacmapr_pacmap_optimize_cpp(SEXP Y_initSEXP, SEXP pair_nbSEXP, SEXP pair_MNSEXP, SEXP pair_FPSEXP, SEXP lrSEXP, SEXP num_itersSEXP, SEXP n_threadsSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -64,14 +64,50 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerMatrix >::type pair_FP(pair_FPSEXP);
     Rcpp::traits::input_parameter< double >::type lr(lrSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type num_iters(num_itersSEXP);
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(pacmap_optimize_cpp(Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, verbose));
+    rcpp_result_gen = Rcpp::wrap(pacmap_optimize_cpp(Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, n_threads, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sample_fp_pairs_nearby_cpp
+IntegerMatrix sample_fp_pairs_nearby_cpp(NumericMatrix Y, IntegerMatrix pair_neighbors, IntegerMatrix old_pair_FP, double low_dist_thres, Nullable<int> random_state);
+RcppExport SEXP _pacmapr_sample_fp_pairs_nearby_cpp(SEXP YSEXP, SEXP pair_neighborsSEXP, SEXP old_pair_FPSEXP, SEXP low_dist_thresSEXP, SEXP random_stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pair_neighbors(pair_neighborsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type old_pair_FP(old_pair_FPSEXP);
+    Rcpp::traits::input_parameter< double >::type low_dist_thres(low_dist_thresSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type random_state(random_stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_fp_pairs_nearby_cpp(Y, pair_neighbors, old_pair_FP, low_dist_thres, random_state));
+    return rcpp_result_gen;
+END_RCPP
+}
+// localmap_optimize_cpp
+List localmap_optimize_cpp(NumericMatrix Y_init, IntegerMatrix pair_nb, IntegerMatrix pair_MN, IntegerMatrix pair_FP, double lr, IntegerVector num_iters, double low_dist_thres, int n_threads, Nullable<int> random_state, bool verbose);
+RcppExport SEXP _pacmapr_localmap_optimize_cpp(SEXP Y_initSEXP, SEXP pair_nbSEXP, SEXP pair_MNSEXP, SEXP pair_FPSEXP, SEXP lrSEXP, SEXP num_itersSEXP, SEXP low_dist_thresSEXP, SEXP n_threadsSEXP, SEXP random_stateSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y_init(Y_initSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pair_nb(pair_nbSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pair_MN(pair_MNSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pair_FP(pair_FPSEXP);
+    Rcpp::traits::input_parameter< double >::type lr(lrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type num_iters(num_itersSEXP);
+    Rcpp::traits::input_parameter< double >::type low_dist_thres(low_dist_thresSEXP);
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< Nullable<int> >::type random_state(random_stateSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(localmap_optimize_cpp(Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, low_dist_thres, n_threads, random_state, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // pacmap_fit_optimize_cpp
-List pacmap_fit_optimize_cpp(NumericMatrix Y_init, IntegerMatrix pair_XP, int n_basis, double lr, IntegerVector num_iters, bool verbose);
-RcppExport SEXP _pacmapr_pacmap_fit_optimize_cpp(SEXP Y_initSEXP, SEXP pair_XPSEXP, SEXP n_basisSEXP, SEXP lrSEXP, SEXP num_itersSEXP, SEXP verboseSEXP) {
+List pacmap_fit_optimize_cpp(NumericMatrix Y_init, IntegerMatrix pair_XP, int n_basis, double lr, IntegerVector num_iters, int n_threads, bool verbose);
+RcppExport SEXP _pacmapr_pacmap_fit_optimize_cpp(SEXP Y_initSEXP, SEXP pair_XPSEXP, SEXP n_basisSEXP, SEXP lrSEXP, SEXP num_itersSEXP, SEXP n_threadsSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,8 +116,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_basis(n_basisSEXP);
     Rcpp::traits::input_parameter< double >::type lr(lrSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type num_iters(num_itersSEXP);
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(pacmap_fit_optimize_cpp(Y_init, pair_XP, n_basis, lr, num_iters, verbose));
+    rcpp_result_gen = Rcpp::wrap(pacmap_fit_optimize_cpp(Y_init, pair_XP, n_basis, lr, num_iters, n_threads, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -90,8 +127,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pacmapr_sample_neighbor_pairs_cpp", (DL_FUNC) &_pacmapr_sample_neighbor_pairs_cpp, 3},
     {"_pacmapr_sample_mn_pairs_cpp", (DL_FUNC) &_pacmapr_sample_mn_pairs_cpp, 4},
     {"_pacmapr_sample_fp_pairs_cpp", (DL_FUNC) &_pacmapr_sample_fp_pairs_cpp, 5},
-    {"_pacmapr_pacmap_optimize_cpp", (DL_FUNC) &_pacmapr_pacmap_optimize_cpp, 7},
-    {"_pacmapr_pacmap_fit_optimize_cpp", (DL_FUNC) &_pacmapr_pacmap_fit_optimize_cpp, 6},
+    {"_pacmapr_pacmap_optimize_cpp", (DL_FUNC) &_pacmapr_pacmap_optimize_cpp, 8},
+    {"_pacmapr_sample_fp_pairs_nearby_cpp", (DL_FUNC) &_pacmapr_sample_fp_pairs_nearby_cpp, 5},
+    {"_pacmapr_localmap_optimize_cpp", (DL_FUNC) &_pacmapr_localmap_optimize_cpp, 10},
+    {"_pacmapr_pacmap_fit_optimize_cpp", (DL_FUNC) &_pacmapr_pacmap_fit_optimize_cpp, 7},
     {NULL, NULL, 0}
 };
 

@@ -13,11 +13,19 @@ sample_fp_pairs_cpp <- function(pair_neighbors, n_points, n_neighbors, n_FP, ran
     .Call(`_pacmapr_sample_fp_pairs_cpp`, pair_neighbors, n_points, n_neighbors, n_FP, random_state)
 }
 
-pacmap_optimize_cpp <- function(Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, verbose) {
-    .Call(`_pacmapr_pacmap_optimize_cpp`, Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, verbose)
+pacmap_optimize_cpp <- function(Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, n_threads, verbose) {
+    .Call(`_pacmapr_pacmap_optimize_cpp`, Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, n_threads, verbose)
 }
 
-pacmap_fit_optimize_cpp <- function(Y_init, pair_XP, n_basis, lr, num_iters, verbose) {
-    .Call(`_pacmapr_pacmap_fit_optimize_cpp`, Y_init, pair_XP, n_basis, lr, num_iters, verbose)
+sample_fp_pairs_nearby_cpp <- function(Y, pair_neighbors, old_pair_FP, low_dist_thres, random_state = NULL) {
+    .Call(`_pacmapr_sample_fp_pairs_nearby_cpp`, Y, pair_neighbors, old_pair_FP, low_dist_thres, random_state)
+}
+
+localmap_optimize_cpp <- function(Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, low_dist_thres, n_threads, random_state, verbose) {
+    .Call(`_pacmapr_localmap_optimize_cpp`, Y_init, pair_nb, pair_MN, pair_FP, lr, num_iters, low_dist_thres, n_threads, random_state, verbose)
+}
+
+pacmap_fit_optimize_cpp <- function(Y_init, pair_XP, n_basis, lr, num_iters, n_threads, verbose) {
+    .Call(`_pacmapr_pacmap_fit_optimize_cpp`, Y_init, pair_XP, n_basis, lr, num_iters, n_threads, verbose)
 }
 

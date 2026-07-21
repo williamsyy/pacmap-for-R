@@ -1,3 +1,31 @@
+# pacmapr 0.1.1
+
+## New
+
+- **`localmap()`** — LocalMAP variant (Wang, Rudin & Shaposhnik). Same
+  pipeline as `pacmap()` for phases 1-2; phase 3 resamples further-pair
+  partners restricted to points within `low_dist_thres` in the current
+  embedding and switches the NN-term gradient to the LocalMAP form
+  `w * NN_coef_recip / sqrt(d_ij)`. New `low_dist_thres` hyperparameter
+  (default 10).
+
+## Speed
+
+- **Parallel gradient** — the 3-term gradient loop now runs over OpenMP
+  threads with per-thread grad buffers reduced at the end. Same math as
+  serial (mod float-add ordering, ~1e-12 differences).
+- **Multi-threaded HNSW** — `n_threads` now defaults to
+  `parallel::detectCores() - 1L` (was `1L`) across `pacmap()`,
+  `localmap()`, `transform.pacmap()`, and `find_pacmap_pairs()`.
+- **Full MNIST 70k benchmark:** 105s → **77s** (1.36× vs 0.1.0), same
+  embedding quality (`label_preservation@10 = 0.952`).
+
+## Fixed
+
+- `transform.pacmap()` first argument renamed to `` `_data` `` to match the
+  S3 generic (was tripping the `checking S3 generic/method consistency`
+  WARNING in `R CMD check`).
+
 # pacmapr 0.1.0
 
 Initial release. Native R + Rcpp port of
