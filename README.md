@@ -40,7 +40,7 @@ CRAN dependencies (`Rcpp`, `RcppHNSW`, `RSpectra`) are pulled in automatically.
 - **`save_pacmap()` / `load_pacmap()`** — one-file `.rds` persistence.
 - **`find_pacmap_pairs()`** — expose the pair-sampling step for inspection or reuse.
 - **Distance metrics** — `euclidean`, `manhattan`, `angular`, `hamming`, and `precomputed` (pass an *n × n* distance matrix instead of a feature matrix; mirrors the [LocalMAP precomputed-distance branch](https://github.com/williamsyy/LocalMAP/tree/feature/precomputed-distance-matrix)).
-- **ANN backends** — [`RcppHNSW`](https://github.com/jlmelville/rcpphnsw) by default (all platforms), or [`faissR`](https://github.com/tkcaccia/faissR) on macOS / Linux via `ann_backend = "faiss"`.
+- **ANN backends** — [`RcppHNSW`](https://github.com/jlmelville/rcpphnsw) by default (all platforms), or [`faissR`](https://github.com/tkcaccia/faissR) via `ann_backend = "faiss"`. `faissR`'s default install refuses on Windows (`OS_type: unix`); Windows users need one of the paths described in [faissR's installation guide](https://github.com/tkcaccia/faissR/blob/main/docs/installation.md#windows-installation-for-faissr) (WSL2 or a manual FAISS+Rtools build).
 - **Deterministic** — same `random_state` → identical embedding.
 
 ## Benchmark: MNIST
@@ -86,19 +86,33 @@ emb <- pacmap(D, distance = "precomputed", random_state = 42)
 
 `apply_pca` is disabled automatically, `init` defaults to `"random"`, and `transform()` is not supported in this mode.
 
-### FAISS backend (macOS / Linux)
+### FAISS backend
 
-Faster ANN for very large *n* if you're willing to pull in a system dependency:
+An alternative ANN backend via [tkcaccia/faissR](https://github.com/tkcaccia/faissR), useful for very large *n* if you're willing to pull in a system dependency. Once `faissR` is installed:
 
 ```r
-system("brew install faiss libomp")           # macOS
-remotes::install_github("tkcaccia/faissR")
-
 emb <- pacmap(X, ann_backend = "faiss")       # explicit
 emb <- pacmap(X, ann_backend = "auto")        # faiss if installed, else hnsw
 ```
 
-`faissR` is [Unix-only](https://github.com/tkcaccia/faissR/blob/main/docs/installation.md). On Windows the default HNSW backend is fast and gives indistinguishable results.
+Installing `faissR` itself depends on your OS. The authoritative guide is [`faissR`'s installation.md](https://github.com/tkcaccia/faissR/blob/main/docs/installation.md); the short version:
+
+**macOS:**
+```sh
+brew install faiss libomp
+```
+```r
+remotes::install_github("tkcaccia/faissR")
+```
+
+**Linux:** install `libfaiss-dev` (Debian/Ubuntu: `sudo apt install libfaiss-dev`) or build FAISS from source with CMake, then `remotes::install_github("tkcaccia/faissR")`.
+
+**Windows:** `remotes::install_github("tkcaccia/faissR")` will fail with `ERROR: Unix-only package` because faissR's `DESCRIPTION` sets `OS_type: unix` — the automated builders can't produce a Windows-compatible FAISS. Two supported workarounds, both non-trivial (see the [Windows section of the guide](https://github.com/tkcaccia/faissR/blob/main/docs/installation.md#windows-installation-for-faissr)):
+
+1. **WSL2** (recommended) — install a Linux distribution via `wsl --install`, then follow the Linux path inside it. Your work has to happen inside WSL2, not native Windows R.
+2. **Native Rtools + FAISS from source** — build FAISS with CMake using the same mingw-w64 toolchain as Rtools, set `FAISS_HOME` to the install prefix, patch/override `OS_type: unix`, then `R CMD INSTALL .` from a `faissR` checkout. Expect 1-3 hours of CMake fiddling for a first attempt.
+
+The default HNSW backend works everywhere with zero extra deps and produces indistinguishable embedding quality; unless you specifically need FAISS's ANN implementation, you can skip this section.
 
 ### Save and reload a model
 
