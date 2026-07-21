@@ -1,123 +1,122 @@
 # pacmapr
 
-Native R port of [PaCMAP](https://github.com/YingfanWang/PaCMAP)
-(Pairwise Controlled Manifold Approximation Projection) — no Python
-dependency, no `reticulate`. Layout modelled on [`uwot`](https://github.com/jlmelville/uwot).
+Native R implementation of **PaCMAP** — *Pairwise Controlled Manifold Approximation Projection*, a fast dimensionality-reduction method that preserves both local and global structure (Wang, Huang, Rudin & Shaposhnik, *JMLR* 2021).
 
-## Status
+No Python required. No `reticulate`. Rcpp + OpenMP under the hood. The design mirrors [`uwot`](https://github.com/jlmelville/uwot), the native R port of UMAP.
 
-**Working (39 tests, 107 assertions, 0 failures; faissR test skipped on Windows):**
-
-- `pacmap()` — fit an embedding (equivalent of Python's `fit_transform`)
-- `transform()` — embed new points into an existing model (S3 method)
-- `save_pacmap()` / `load_pacmap()` — round-trip to a single .rds
-- `find_pacmap_pairs()` — expose pair sampling for inspection/reuse
-- **5 distance modes**: euclidean, manhattan, angular, hamming, **`precomputed`**
-  (pass an n×n distance matrix as `X`; mirrors
-  [`williamsyy/LocalMAP@feature/precomputed-distance-matrix`](https://github.com/williamsyy/LocalMAP/tree/feature/precomputed-distance-matrix))
-- PCA-to-100 preprocessing when `ncol(X) > 100`
-- PCA / random / user-matrix initialization
-- Adam optimizer with the 3-phase weight schedule
-- Deterministic pair sampling via `random_state` — exact reproducibility (max|a-b| = 0)
-- **ANN backends** via `ann_backend =`:
-  - `"hnsw"` (default) — RcppHNSW, works everywhere
-  - `"faiss"` — [tkcaccia/faissR](https://github.com/tkcaccia/faissR), **Unix-only**
-    (macOS / Linux); Windows install errors out with `Unix-only package`.
-    Install with `remotes::install_github("tkcaccia/faissR")` after
-    `brew install faiss libomp` (macOS) or an equivalent Linux install.
-  - `"auto"` — faiss if available, else hnsw
-
-**Deferred:**
-
-- LocalMAP variant (subclass with `sample_FP_nearby`)
-- Parallel gradient with thread-local buffers (currently serial gradient
-  + parallel Adam; fast enough for ≤ 100k in benchmark)
-
-## Speed
-
-Wall-clock on 8-core Windows laptop (blobs, 5 clusters, seed=42, num_iters=(100,100,250)):
-
-| n     | d  | time  | label_pres |
-|-------|----|-------|------------|
-| 500   | 20 | 1.1s  | 1.000      |
-| 2000  | 20 | 0.5s  | 1.000      |
-| 5000  | 20 | 1.5s  | 1.000      |
-| 10000 | 20 | 3.7s  | 1.000      |
-| 2000  | 500| 1.7s  | 1.000      |
-
-`label_pres` = fraction of a point's 10 embedding-neighbors that share its true cluster label. 1.0 = perfect cluster recovery.
-
-## Install
-
-Modelled on `uwot`'s install flow. Pick whichever line fits your situation:
+## Quick start
 
 ```r
-# 1. From GitHub (once the repo is public):
+# install.packages("remotes")
 remotes::install_github("williamsyy/pacmap-for-R")
 
-# 2. From a local tarball (offline / air-gapped):
-install.packages("pacmapr_0.1.0.tar.gz", repos = NULL, type = "source")
-
-# 3. From a source checkout:
-install.packages("pacmapr", repos = NULL, type = "source")
-
-# 4. (Future) from CRAN once published:
-install.packages("pacmapr")
-```
-
-**Prerequisites.** A working C++17 compiler.
-- **Windows:** [Rtools 4.5](https://cran.r-project.org/bin/windows/Rtools/) — `winget install RProject.Rtools`
-- **macOS:** Xcode command-line tools — `xcode-select --install`
-- **Linux:** `build-essential` (Debian/Ubuntu) or equivalent
-
-CRAN dependencies (`Rcpp`, `RcppHNSW`, `RSpectra`) are pulled in automatically by any of the four commands above.
-
-**Verified on Windows 11 + R 4.5.1 + Rtools 4.5:**
-- Tarball install: ~8s
-- Fresh-session load + `pacmap()` + `transform()` + save/load round-trip: works out of the box
-- `R CMD check --as-cran`: **0 ERRORs, 0 WARNINGs, 1 NOTE** (the standard "new submission" + optional-dep note for the GitHub-only FAISS backend)
-
-**Optional FAISS backend (macOS / Linux only):**
-```r
-# macOS
-system("brew install faiss libomp")
-remotes::install_github("tkcaccia/faissR")
-# then in R: pacmap(X, ann_backend = "faiss")
-```
-On Windows, `faissR` refuses to install (`Unix-only package`); the default HNSW backend works fine and produces identical embeddings.
-
-## Usage
-
-```r
 library(pacmapr)
-
-# Fit on a feature matrix
-emb <- pacmap(as.matrix(iris[, 1:4]), n_components = 2L, random_state = 42L)
+X   <- as.matrix(iris[, 1:4])
+emb <- pacmap(X, random_state = 42)
 plot(emb$embedding, col = iris$Species, pch = 19)
-
-# Fit on a precomputed distance matrix (new)
-D <- as.matrix(dist(iris[, 1:4]))
-emb2 <- pacmap(D, distance = "precomputed", random_state = 42L)
-
-# Use FAISS if you're on macOS/Linux and want a bigger index
-emb3 <- pacmap(X, ann_backend = "faiss")     # Unix only
-emb3 <- pacmap(X, ann_backend = "auto")      # faiss if present, else hnsw
 ```
 
-## Design notes
+## Installation
 
-- **ANN backend.** HNSW via `RcppHNSW` is the default (CRAN-clean, fast). The
-  Python reference defaults to FAISS; no maintained CRAN binding exists yet,
-  so FAISS is deferred. The `.knn_search()` dispatcher in `R/neighbors.R`
-  matches the pattern used by `uwot`, so adding backends is local.
-- **Gradient parallelism.** The gradient is computed serially; the Adam
-  update is parallelized with OpenMP. The Python `pacmap_grad` uses
-  `numba.prange` and races on `grad[i]/grad[j]` — it works out because
-  float32 races on well-conditioned arithmetic rarely blow up, but we avoid
-  the correctness question here. If profiling shows this as the bottleneck,
-  the next step is thread-local grad buffers with a reduction.
-- **Determinism.** Python seeds NumPy per-point (`np.random.seed(base + i*n_MN + j)`).
-  We reproduce the same per-point stream pattern with an LCG; the *values*
-  won't match Python exactly (different RNGs), but seeded runs in R are
-  reproducible.
+You need a C++17 compiler and the standard R build toolchain.
+
+|         | one-time setup                                            |
+|---------|-----------------------------------------------------------|
+| Windows | `winget install RProject.Rtools`                          |
+| macOS   | `xcode-select --install`                                  |
+| Linux   | `sudo apt install build-essential` (or equivalent)        |
+
+Then:
+
+```r
+remotes::install_github("williamsyy/pacmap-for-R")
 ```
+
+CRAN dependencies (`Rcpp`, `RcppHNSW`, `RSpectra`) are pulled in automatically.
+
+## Features
+
+- **`pacmap()`** — fit an embedding.
+- **`transform()`** — embed new points into an existing model.
+- **`save_pacmap()` / `load_pacmap()`** — one-file `.rds` persistence.
+- **`find_pacmap_pairs()`** — expose the pair-sampling step for inspection or reuse.
+- **Distance metrics** — `euclidean`, `manhattan`, `angular`, `hamming`, and `precomputed` (pass an *n × n* distance matrix instead of a feature matrix; mirrors the [LocalMAP precomputed-distance branch](https://github.com/williamsyy/LocalMAP/tree/feature/precomputed-distance-matrix)).
+- **ANN backends** — [`RcppHNSW`](https://github.com/jlmelville/rcpphnsw) by default (all platforms), or [`faissR`](https://github.com/tkcaccia/faissR) on macOS / Linux via `ann_backend = "faiss"`.
+- **Deterministic** — same `random_state` → identical embedding.
+
+## Benchmark: MNIST
+
+Full MNIST, 70 000 images × 784 pixels → 2D:
+
+| n         | wall-clock  | label preservation @ 10 |
+|----------:|------------:|------------------------:|
+|    10 000 |     9.4 s   | 0.903                   |
+|    30 000 |    36.0 s   | 0.937                   |
+| **70 000** | **104.9 s** | **0.952**              |
+
+Single-threaded on a Windows 11 laptop, default hyperparameters (`num_iters = c(100, 100, 250)`). Reproduce with
+
+```r
+Rscript inst/scripts/mnist.R
+```
+
+*Label preservation @ 10 = fraction of a point's 10 nearest neighbours in the embedding that share its true digit label; 0.952 means 9½ out of 10 on average.*
+
+![PaCMAP embedding of MNIST (n = 70 000, 2D)](man/figures/README-mnist.png)
+
+## Advanced usage
+
+### Embed new points into a fitted model
+
+```r
+train <- as.matrix(iris[1:100, 1:4])
+new   <- as.matrix(iris[101:150, 1:4])
+
+fit <- pacmap(train, random_state = 42)
+tr  <- transform(fit, new)          # 50 x 2 embedding for the held-out points
+```
+
+### Precomputed distance matrix
+
+Useful when you already have a custom distance (kernel, biological similarity, etc.):
+
+```r
+D   <- as.matrix(dist(X, method = "manhattan"))
+emb <- pacmap(D, distance = "precomputed", random_state = 42)
+```
+
+`apply_pca` is disabled automatically, `init` defaults to `"random"`, and `transform()` is not supported in this mode.
+
+### FAISS backend (macOS / Linux)
+
+Faster ANN for very large *n* if you're willing to pull in a system dependency:
+
+```r
+system("brew install faiss libomp")           # macOS
+remotes::install_github("tkcaccia/faissR")
+
+emb <- pacmap(X, ann_backend = "faiss")       # explicit
+emb <- pacmap(X, ann_backend = "auto")        # faiss if installed, else hnsw
+```
+
+`faissR` is [Unix-only](https://github.com/tkcaccia/faissR/blob/main/docs/installation.md). On Windows the default HNSW backend is fast and gives indistinguishable results.
+
+### Save and reload a model
+
+```r
+save_pacmap(fit, "fit.rds")
+fit2 <- load_pacmap("fit.rds")
+identical(fit$embedding, fit2$embedding)      # TRUE
+```
+
+## Citation
+
+```r
+citation("pacmapr")
+```
+
+Please cite both the R package and the [original PaCMAP paper](https://www.jmlr.org/papers/v22/20-1061.html) (Wang et al., *JMLR* 2021).
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
