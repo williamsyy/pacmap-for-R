@@ -2,8 +2,6 @@
 
 Native R implementation of **PaCMAP** — *Pairwise Controlled Manifold Approximation Projection*, a fast dimensionality-reduction method that preserves both local and global structure (Wang, Huang, Rudin & Shaposhnik, *JMLR* 2021).
 
-No Python required. No `reticulate`. Rcpp + OpenMP under the hood. The design mirrors [`uwot`](https://github.com/jlmelville/uwot), the native R port of UMAP.
-
 ## Quick start
 
 ```r
