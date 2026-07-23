@@ -84,6 +84,16 @@ emb_l <- localmap(X, random_state = 42, low_dist_thres = 10)
 
 If you're unsure, start with `pacmap()`. If your embedding shows blurred cluster boundaries and cluster identification is the goal, switch to `localmap()`.
 
+**Side-by-side on MNIST (n = 30 000, same seed):**
+
+![pacmap() vs localmap() on MNIST (n = 30 000)](man/figures/README-pacmap-vs-localmap.png)
+
+Both recover the ten digit classes. `localmap()`'s phase-3 refinement tightens the cluster interiors and thins the bridges between adjacent digits (e.g. 4/7/9, 3/5/8), lifting `label_preservation@10` from **0.930 → 0.943**. Reproduce with
+
+```r
+Rscript inst/scripts/pacmap_vs_localmap.R
+```
+
 ## Advanced usage
 
 ### Embed new points into a fitted model
