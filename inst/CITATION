@@ -1,16 +1,20 @@
-citHeader("To cite pacmapr in publications, please cite both the R package and the original PaCMAP paper:")
+citHeader(paste(
+  "pacmapr implements two algorithms. Please cite the R package and the",
+  "algorithm you used -- PaCMAP (pacmap()) or LocalMAP (localmap())."
+))
 
 bibentry(
   bibtype  = "Manual",
   title    = "pacmapr: Pairwise Controlled Manifold Approximation Projection (PaCMAP) for R",
   author   = person("Yiyang", "Sun"),
   year     = "2026",
-  note     = "R package version 0.1.0",
+  note     = "R package version 0.1.1",
   url      = "https://github.com/williamsyy/pacmap-for-R"
 )
 
 bibentry(
   bibtype  = "Article",
+  key      = "wang2021pacmap",
   title    = "Understanding How Dimension Reduction Tools Work: An Empirical Approach to Deciphering t-SNE, UMAP, TriMap, and PaCMAP for Data Visualization",
   author   = c(
     person("Yingfan", "Wang"),
@@ -23,5 +27,25 @@ bibentry(
   volume   = "22",
   number   = "201",
   pages    = "1--73",
-  url      = "https://www.jmlr.org/papers/v22/20-1061.html"
+  url      = "https://www.jmlr.org/papers/v22/20-1061.html",
+  header   = "For pacmap():"
+)
+
+bibentry(
+  bibtype  = "Article",
+  key      = "wang2025localmap",
+  title    = "Dimension Reduction with Locally Adjusted Graphs",
+  author   = c(
+    person("Yingfan", "Wang"),
+    person("Yiyang", "Sun"),
+    person("Haiyang", "Huang"),
+    person("Cynthia", "Rudin")
+  ),
+  journal  = "Proceedings of the AAAI Conference on Artificial Intelligence",
+  year     = "2025",
+  volume   = "39",
+  number   = "20",
+  pages    = "21357--21365",
+  doi      = "10.1609/aaai.v39i20.35436",
+  header   = "For localmap():"
 )

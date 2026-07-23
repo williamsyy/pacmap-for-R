@@ -63,6 +63,27 @@ Rscript inst/scripts/mnist.R
 
 ![PaCMAP embedding of MNIST (n = 70 000, 2D)](man/figures/README-mnist.png)
 
+## PaCMAP or LocalMAP — which to use?
+
+Both algorithms are implemented and share the same input, output, and hyperparameters. LocalMAP adds a phase-3 refinement that resamples further-pair partners restricted to points already close in the current embedding, plus a modified NN gradient. The trade-off:
+
+|                       | `pacmap()`                                                            | `localmap()`                                                                             |
+|-----------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| **Use when**          | You want a robust, well-tested default; global + local structure both matter | Cluster boundaries matter more than continuous structure; input distances are noisy      |
+| **Cluster separation** | Good                                                                  | Tighter — the local FP resampling sharpens boundaries in phase 3                          |
+| **Continuous manifolds / trajectories** | Preserved smoothly                                    | May over-tighten; prefer `pacmap()`                                                       |
+| **Extra hyperparameter** | —                                                                   | `low_dist_thres` (default 10; controls the phase-3 FP resampling radius)                 |
+| **Cost**              | Baseline (MNIST 70k ≈ 77 s)                                          | ~10-20% slower (extra FP resampling every 10 iters in phase 3)                            |
+| **Paper**             | Wang, Huang, Rudin & Shaposhnik, [*JMLR* 2021](https://www.jmlr.org/papers/v22/20-1061.html) | Wang, Sun, Huang & Rudin, [*AAAI* 2025](https://doi.org/10.1609/aaai.v39i20.35436)       |
+
+```r
+# Same call surface — swap one word.
+emb_p <- pacmap(  X, random_state = 42)
+emb_l <- localmap(X, random_state = 42, low_dist_thres = 10)
+```
+
+If you're unsure, start with `pacmap()`. If your embedding shows blurred cluster boundaries and cluster identification is the goal, switch to `localmap()`.
+
 ## Advanced usage
 
 ### Embed new points into a fitted model
@@ -128,8 +149,11 @@ identical(fit$embedding, fit2$embedding)      # TRUE
 citation("pacmapr")
 ```
 
-Please cite both the R package and the [original PaCMAP paper](https://www.jmlr.org/papers/v22/20-1061.html) (Wang et al., *JMLR* 2021).
+Cite the R package plus the paper for the algorithm you used:
+
+- **`pacmap()`** — Wang, Y., Huang, H., Rudin, C., & Shaposhnik, Y. (2021). *Understanding How Dimension Reduction Tools Work: An Empirical Approach to Deciphering t-SNE, UMAP, TriMap, and PaCMAP for Data Visualization.* Journal of Machine Learning Research, 22(201), 1–73. <https://www.jmlr.org/papers/v22/20-1061.html>
+- **`localmap()`** — Wang, Y., Sun, Y., Huang, H., & Rudin, C. (2025). *Dimension Reduction with Locally Adjusted Graphs.* Proceedings of the AAAI Conference on Artificial Intelligence, 39(20), 21357–21365. <https://doi.org/10.1609/aaai.v39i20.35436>
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](LICENSE). The package is an independent R re-implementation; the underlying algorithms are the work of the authors above.
